@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 SOLR_PORT=${SOLR_PORT:-8983}
-SOLR_VERSION=${SOLR_VERSION:-4.9.1}
+SOLR_VERSION=${SOLR_VERSION:-5.0.0}
 DEBUG=${DEBUG:-false}
 SOLR_CORE=${SOLR_CORE:-core0}
 
@@ -39,17 +39,29 @@ run() {
     echo "Running with folder $dir_name"
     echo "Starting solr on port ${solr_port}..."
 
-    # go to the solr folder
-    cd $1/example
-
-    if [ "$DEBUG" = "true" ]
+    if [ "$SOLR_VERSION" = "5.0.0" ]
     then
-        java -Djetty.port=$solr_port -Dsolr.solr.home=multicore -jar start.jar &
+        cd $1
+        if [ "$DEBUG" = "true" ]
+        then
+            bin/solr start -p $solr_port &
+        else
+            bin/solr start -p $solr_port > /dev/null 2>&1 &
+        fi
+        cd ../
     else
-        java -Djetty.port=$solr_port -Dsolr.solr.home=multicore -jar start.jar > /dev/null 2>&1 &
+        # go to the solr folder
+        cd $1/example
+
+        if [ "$DEBUG" = "true" ]
+        then
+            java -Djetty.port=$solr_port -Dsolr.solr.home=multicore -jar start.jar &
+        else
+            java -Djetty.port=$solr_port -Dsolr.solr.home=multicore -jar start.jar > /dev/null 2>&1 &
+        fi
+        cd ../../
     fi
     wait_for_solr
-    cd ../../
     echo "Started"
 }
 
